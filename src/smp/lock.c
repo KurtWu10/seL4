@@ -18,7 +18,7 @@ BOOT_CODE void clh_lock_init(void)
     }
 
     /* Initialize the CLH head */
-    big_kernel_lock.nodes[CONFIG_MAX_NUM_NODES].value = CLHState_Granted;
+    __atomic_store_n(&big_kernel_lock.nodes[CONFIG_MAX_NUM_NODES].value, CLHState_Granted, __ATOMIC_RELAXED);
     big_kernel_lock.head = &big_kernel_lock.nodes[CONFIG_MAX_NUM_NODES];
 }
 
