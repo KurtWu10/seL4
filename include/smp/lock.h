@@ -101,10 +101,7 @@ static inline void FORCE_INLINE clh_lock_acquire(word_t cpu, bool_t irqPath)
 
     /* We do not have an __atomic_thread_fence here as this is already handled by the
      * atomic_exchange just above */
-    while (__atomic_load_n(&big_kernel_lock.node_owners[cpu].next->value, __ATOMIC_RELAXED) != CLHState_Granted) {
-        /* As we are in a loop we need to ensure that any loads of future iterations of the
-         * loop are performed after this one */
-        __atomic_thread_fence(__ATOMIC_ACQUIRE);
+    while (__atomic_load_n(&big_kernel_lock.node_owners[cpu].next->value, __ATOMIC_ACQUIRE) != CLHState_Granted) {
         if (clh_is_ipi_pending(cpu)) {
             /* we only handle irq_remote_call_ipi here as other type of IPIs
              * are async and could be delayed. 'handleIPI' may not return
@@ -123,9 +120,7 @@ static inline void FORCE_INLINE clh_lock_acquire(word_t cpu, bool_t irqPath)
 static inline void FORCE_INLINE clh_lock_release(word_t cpu)
 {
     /* make sure no resource access passes from this point */
-    __atomic_thread_fence(__ATOMIC_RELEASE);
-
-    __atomic_store_n(&big_kernel_lock.node_owners[cpu].node->value, CLHState_Granted, __ATOMIC_RELAXED);
+    __atomic_store_n(&big_kernel_lock.node_owners[cpu].node->value, CLHState_Granted, __ATOMIC_RELEASE);
     big_kernel_lock.node_owners[cpu].node =
         big_kernel_lock.node_owners[cpu].next;
 }
